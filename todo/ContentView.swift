@@ -1,11 +1,3 @@
-//
-//  ContentView.swift
-//  todo
-//
-//  Created by 亜里沙井上 on 2020/10/18.
-//  Copyright © 2020 Balaji. All rights reserved.
-//
-
 import SwiftUI
 import CoreData
 
@@ -67,7 +59,7 @@ struct ContentView: View {
                         
                         self.selected = type(id: "", title: "", msg: "", time: "", day: "")
                         self.show.toggle()
-                        
+
                     }) {
                         
                         Image(systemName: "plus").resizable().frame(width: 25, height: 25).padding()
@@ -134,11 +126,10 @@ struct cellview : View {
             Text(data.title).lineLimit(1)
             
             Spacer()
-            
+            Text("期限")
             VStack(alignment: .leading,spacing : 5){
                 
                 Text(data.day)
-                Text(data.time)
             }
         }.padding()
         .background(RoundedRectangle(cornerRadius: 25).fill(Color.white))
@@ -147,52 +138,52 @@ struct cellview : View {
     }
 }
 
+//モーダルウィンドウビュー
 struct SaveView : View {
     
     @State var msg = ""
     @State var title = ""
     @Binding var show : Bool
     @EnvironmentObject var obs : observer
+    @State var deadLine = Date()
     var data : type
-    
     var body : some View{
         
-        VStack(spacing : 12){
+        NavigationView{
+            Form {
+                Section(header: Text("Title")) {
+                    TextField("Title", text: $title)
+                }
+                Section {
+                    DatePicker(
+                        selection: $deadLine,
+                        displayedComponents: .date) {
+                        Text("いつまで").foregroundColor(Color(.gray))
+                    }
+                }
+                Section {
             
-            TextField("Title", text: $title)
-            
-            Divider()
-            
-            multiline(txt: $msg)
-            
-        }.padding()
-        .onAppear {
-        
-            self.msg = self.data.msg
-            self.title = self.data.title
                 
-        }
-        
-        VStack {
-                    Spacer()
-
-                    Button(action: {
-
-                        if self.data.id != ""{
-
-                            self.obs.update(id: self.data.id, msg: self.msg, title: self.title)
-                        }
-                        else{
-
-                             self.obs.add(title: self.title, msg: self.msg, date: Date())
-                        }
-
-                        self.show.toggle()
-
-                    }) {
-
-                        Text("Save")
-            }
+                Button(action: {
+                    if self.data.id != ""{
+                        self.obs.update(id: self.data.id, msg: self.msg, title: self.title)
+                    }
+                    else{
+                        self.obs.add(title: self.title, msg: self.msg, date: Date())
+                    }
+                    self.show.toggle()
+                }) {
+                    Text("登録")
+                }
+                }
+            }.navigationBarTitle(Text("Wish List"), displayMode: .inline)
+            multiline(txt: $msg)
+                .onAppear
+                {
+                    self.msg = self.data.msg
+                    self.title = self.data.title
+//                    self.deadLine = self.data.deadLine
+                }
         }
     }
 }
@@ -243,6 +234,7 @@ struct type : Identifiable {
     var msg : String
     var time : String
     var day : String
+//    var deadLine : Date
 }
 
 class observer : ObservableObject{
@@ -381,3 +373,4 @@ class observer : ObservableObject{
         }
     }
 }
+
